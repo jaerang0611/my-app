@@ -1,10 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* 전체 배경을 어두운 색으로, 글씨는 흰색으로 설정 */
+/* 아래는 우리가 추가한 배경색 설정 */
+@theme {
+  --color-gray-900: #111;
+}
+
 body {
-  background-color: #111; /* 아주 진한 회색 (거의 검정) */
-  color: white;           /* 기본 글씨는 흰색 */
+  background-color: #111;
+  color: white;
   font-family: sans-serif;
 }
