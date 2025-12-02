@@ -1,99 +1,125 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from "react";
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false); // 채팅창 열림/닫힘 상태
+  const [input, setInput] = useState("");      // 사용자 입력값
   const [messages, setMessages] = useState([
-    { type: 'bot', text: '안녕하세요! 포트폴리오 작성을 도와드릴까요? 🤖' }
+    { role: "ai", text: "안녕하세요! AI 자소서 코치입니다. \n포트폴리오 작성이나 면접 고민을 물어보세요! 🤖" }
   ]);
-  const [input, setInput] = useState('');
-  const messagesEndRef = useRef(null); // 스크롤 자동 내리기용
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태
+  const scrollRef = useRef(null);    // 스크롤 자동 이동용
 
-  // 새 메시지 오면 스크롤 맨 아래로
+  // 메시지가 추가되거나 창이 열릴 때 스크롤을 맨 아래로 이동
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isOpen]);
 
-  // 메시지 전송 함수
-  const handleSend = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
-    // 1. 내 메시지 추가
-    const newMessages = [...messages, { type: 'user', text: input }];
-    setMessages(newMessages);
-    setInput('');
+    // 1. 사용자 메시지 화면에 즉시 표시
+    const userMsg = input;
+    setMessages((prev) => [...prev, { role: "user", text: userMsg }]);
+    setInput("");
+    setIsLoading(true);
 
-    // 2. (가짜) AI 응답 시뮬레이션
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev, 
-        { type: 'bot', text: '아직 FastAPI 연결 전이라 답장할 수 없어요! 😅 (3교시에 연결해요)' }
-      ]);
-    }, 1000);
+    try {
+      // 2. FastAPI 서버(내 컴퓨터)로 전송
+      // (팀원 서버를 쓰고 싶으면 주소를 바꾸면 됩니다)
+      const res = await fetch("http://127.0.0.1:8000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // 우리 백엔드는 'message'라는 이름을 받습니다.
+        body: JSON.stringify({ message: userMsg }), 
+      });
+      
+      if (!res.ok) {
+        throw new Error(`Server Error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      
+      // 3. AI 응답 화면에 표시 (우리 백엔드는 'reply'로 답장합니다)
+      setMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
+
+    } catch (error) {
+      console.error(error);
+      setMessages((prev) => [...prev, { role: "ai", text: "죄송합니다. 서버가 꺼져있는 것 같아요! 😢\n(터미널에서 uvicorn 켰는지 확인해주세요)" }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // 엔터키 지원
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleSend();
+  // 엔터키 처리
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // 줄바꿈 방지
+      sendMessage();
+    }
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
       
-      {/* 🟢 채팅창 (열렸을 때만 보임) */}
+      {/* 🟢 채팅창 본체 (isOpen이 true일 때만 보임) */}
       {isOpen && (
-        <div className="mb-4 w-[350px] h-[500px] bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in-up">
+        <div className="mb-4 w-[360px] h-[550px] bg-black/90 border border-cyan-500 rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.6)] flex flex-col overflow-hidden backdrop-blur-md animate-fade-in-up transition-all duration-300">
           
-          {/* 헤더 */}
-          <div className="bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700">
+          {/* 1. 헤더 */}
+          <div className="bg-cyan-950/80 p-4 border-b border-cyan-500/50 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🤖</span>
-              <div>
-                <h3 className="text-white font-bold text-sm">AI Coach Yong</h3>
-                <span className="text-green-400 text-xs flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                  Online
-                </span>
-              </div>
+              <span className="text-xl">🎓</span>
+              <span className="text-cyan-400 font-bold tracking-wider drop-shadow-md">AI Coach Yong</span>
             </div>
             <button 
-              onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-white transition-colors"
+              onClick={() => setIsOpen(false)} 
+              className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-200"
             >
               ✕
             </button>
           </div>
 
-          {/* 메시지 영역 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#111]">
+          {/* 2. 메시지 리스트 영역 */}
+          <div ref={scrollRef} className="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-cyan-900 scrollbar-track-transparent">
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div 
-                  className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                    msg.type === 'user' 
-                      ? 'bg-blue-600 text-white rounded-tr-none' 
-                      : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'
-                  }`}
-                >
-                  {msg.text}
+              <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] p-3 text-sm leading-relaxed rounded-2xl shadow-sm ${
+                  msg.role === "user" 
+                    ? "bg-cyan-700 text-white rounded-tr-none" 
+                    : "bg-gray-800 text-gray-200 border border-gray-700 rounded-tl-none"
+                }`}>
+                  {/* 줄바꿈 처리를 위해 whitespace-pre-wrap 적용 */}
+                  <p className="whitespace-pre-wrap">{msg.text}</p>
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} /> {/* 스크롤 바닥 감지용 */}
+            
+            {/* 로딩 인디케이터 */}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-800 border border-gray-700 p-3 rounded-2xl rounded-tl-none text-cyan-500 text-xs flex items-center gap-2 animate-pulse">
+                  <span>AI가 생각 중입니다...</span>
+                  <span className="animate-spin">⏳</span>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* 입력창 영역 */}
-          <div className="p-3 bg-gray-800 border-t border-gray-700 flex gap-2">
-            <input 
-              type="text" 
+          {/* 3. 입력창 영역 */}
+          <div className="p-3 bg-gray-900/90 border-t border-gray-700 flex gap-2">
+            <input
+              className="flex-1 bg-gray-800 text-white text-sm rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all"
+              placeholder="궁금한 점을 입력하세요..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="궁금한 점을 물어보세요..."
-              className="flex-1 bg-gray-900 text-white text-sm rounded-lg px-3 py-2 border border-gray-600 focus:outline-none focus:border-green-400"
+              onKeyDown={handleKeyDown}
             />
             <button 
-              onClick={handleSend}
-              className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-3 py-2 transition-colors"
+              onClick={sendMessage}
+              disabled={isLoading}
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white rounded-full w-12 h-12 flex items-center justify-center transition-all shadow-lg hover:shadow-cyan-500/50"
             >
               ➤
             </button>
@@ -101,14 +127,15 @@ export default function ChatWidget() {
         </div>
       )}
 
-      {/* 🟢 둥둥 떠있는 버튼 (토글) */}
-      <button 
+      {/* 🟢 둥둥 떠있는 버튼 (Floating Action Button) */}
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-gradient-to-r from-green-400 to-blue-500 rounded-full shadow-[0_0_20px_rgba(74,222,128,0.5)] flex items-center justify-center text-3xl hover:scale-110 transition-transform"
+        className={`w-16 h-16 rounded-full shadow-[0_0_20px_rgba(6,182,212,0.6)] flex items-center justify-center text-3xl transition-all duration-300 hover:scale-110 active:scale-95 ${
+            isOpen ? "bg-gray-700 rotate-45" : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:shadow-cyan-400/50"
+        }`}
       >
-        {isOpen ? '✕' : '💬'}
+        {isOpen ? "➕" : "🤖"}
       </button>
-
     </div>
   );
 }
