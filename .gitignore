@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# --- 백엔드(Python) 무시 파일 ---
+backend/venv
+backend/__pycache__
+backend/*.pyc
+backend/.env
