@@ -1,23 +1,48 @@
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import { useState } from 'react';
 
 export default function Complete({ answers, resetAnswers }) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 1. 저장 후 나가기
-  const handleSaveAndExit = () => {
-    console.log("데이터 저장 완료:", answers);
-    alert("저장되었습니다! (시뮬레이션)");
-    resetAnswers(); 
-    router.push('/'); 
-  };
-
+  const handleSaveAndExit = () => { resetAnswers(); router.push('/'); };
   // 2. 저장 안 하고 나가기
-  const handleDiscardAndExit = () => {
-    resetAnswers(); 
-    router.push('/'); 
+  const handleDiscardAndExit = () => { resetAnswers(); router.push('/'); };
+
+  // 3. AI 분석 요청 (데이터 전송)
+  const handleSubmitToAI = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`서버 에러: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // 안전장치: 데이터가 있을 때만 저장
+      if (result.data) {
+        localStorage.setItem('portfolio_result', JSON.stringify(result.data));
+        router.push('/result');
+      } else {
+        alert("AI가 빈 응답을 보냈습니다. 다시 시도해주세요.");
+      }
+
+    } catch (error) {
+      console.error("에러 상세:", error);
+      alert("❌ 서버 연결 실패!\n1. 백엔드 터미널이 켜져 있나요?\n2. backend/main.py 저장 하셨나요?");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -34,7 +59,7 @@ export default function Complete({ answers, resetAnswers }) {
           </p>
         </div>
 
-        {/* 📝 요약 카드 */}
+        {/* 📝 [복구됨] 사용자 입력 정보 요약 카드 */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl mb-10">
           
           {/* 기본 정보 */}
@@ -109,48 +134,68 @@ export default function Complete({ answers, resetAnswers }) {
           </div>
         </div>
 
-        {/* 👇 버튼 위치 변경 완료 (AI 분석이 왼쪽 / 수정하기가 오른쪽) */}
-        <div className="flex gap-4 justify-center">
-          {/* 메인 버튼: AI 분석 시작 */}
-          <button 
-            onClick={() => alert("3교시(FastAPI)에서 기능을 붙일 예정입니다!")}
-            className="px-8 py-3 rounded-lg bg-gradient-to-r from-green-400 to-blue-500 text-black font-bold hover:opacity-90 shadow-[0_0_20px_rgba(74,222,128,0.4)] transition-all transform hover:scale-105"
-          >
-            AI 분석 시작하기 ⚡
-          </button>
+        {/* 👇 버튼 영역 (디자인 수정 완료) */}
+        <div className="flex gap-4 justify-center items-center mt-10">
+          
+          <div className="relative group">
+            <div className={`absolute -inset-1 rounded-lg bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 opacity-70 blur transition duration-200 
+              ${isSubmitting ? 'animate-spin-slow' : 'group-hover:opacity-100'}`}>
+            </div>
+            
+            <button 
+              onClick={handleSubmitToAI}
+              disabled={isSubmitting} 
+              className={`relative px-10 py-4 rounded-lg bg-black font-bold text-lg flex items-center justify-center gap-3 transition-all whitespace-nowrap w-auto min-w-[220px]
+                ${isSubmitting ? 'text-transparent' : 'text-white'}`}
+            >
+              {isSubmitting && (
+                <div className="absolute inset-0 flex items-center justify-center text-white gap-2">
+                  <svg className="animate-spin h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>AI 디자인 중...</span>
+                </div>
+              )}
 
-          {/* 서브 버튼: 수정하기 */}
+              {!isSubmitting && (
+                <>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
+                    AI 분석 시작하기
+                  </span>
+                  <span>⚡</span>
+                </>
+              )}
+            </button>
+          </div>
+
           <button 
             onClick={() => router.back()} 
-            className="px-6 py-3 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition-all font-bold"
+            className="px-6 py-4 rounded-lg border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 transition-all font-bold whitespace-nowrap"
           >
             수정하기
           </button>
         </div>
 
-        {/* 처음으로 돌아가기 */}
         <div className="mt-8 text-center">
-            <button 
-              onClick={() => setShowModal(true)} 
-              className="text-gray-600 hover:text-white underline text-sm"
-            >
+            <button onClick={() => setShowModal(true)} className="text-gray-600 hover:text-white underline text-sm">
               처음으로 돌아가기
             </button>
         </div>
       </div>
-
+      
       {/* 팝업 모달 */}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-gray-900 border border-gray-700 p-8 rounded-2xl max-w-md w-full shadow-2xl">
-            <h3 className="text-2xl font-bold text-white mb-2">처음으로 돌아가시겠어요?</h3>
-            <p className="text-gray-400 mb-8">작성한 내용은 사라질 수 있습니다.</p>
-            <div className="flex flex-col gap-3">
-              <button onClick={handleSaveAndExit} className="w-full py-3 rounded-lg bg-gradient-to-r from-green-500 to-blue-500 text-black font-bold">💾 저장 후 처음으로</button>
-              <button onClick={handleDiscardAndExit} className="w-full py-3 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10">🗑️ 저장 안 함 (초기화)</button>
-              <button onClick={() => setShowModal(false)} className="w-full py-3 rounded-lg text-gray-500 hover:text-white mt-2">취소</button>
-            </div>
-          </div>
+           <div className="bg-gray-900 border border-gray-700 p-8 rounded-2xl max-w-md w-full shadow-2xl">
+             <h3 className="text-2xl font-bold text-white mb-2">처음으로 돌아가시겠어요?</h3>
+             <p className="text-gray-400 mb-8">작성한 내용은 사라질 수 있습니다.</p>
+             <div className="flex flex-col gap-3">
+               <button onClick={handleSaveAndExit} className="w-full py-3 rounded-lg bg-gradient-to-r from-green-500 to-blue-500 text-black font-bold">💾 저장 후 처음으로</button>
+               <button onClick={handleDiscardAndExit} className="w-full py-3 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10">🗑️ 저장 안 함 (초기화)</button>
+               <button onClick={() => setShowModal(false)} className="w-full py-3 rounded-lg text-gray-500 hover:text-white mt-2">취소</button>
+             </div>
+           </div>
         </div>
       )}
     </div>

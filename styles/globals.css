@@ -10,3 +10,12 @@ body {
   color: white;
   font-family: sans-serif;
 }
+
+/* 천천히 도는 애니메이션 */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite; /* 3초에 한 바퀴 */
+}
