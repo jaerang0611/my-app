@@ -1,9 +1,9 @@
-// pages/_app.js (참고용)
 import '../styles/globals.css';
 import { useState } from 'react';
+import ChatWidget from '../components/ChatWidget'; // 👈 1. 불러오기
 
 export default function App({ Component, pageProps }) {
-  const [answers, setAnswers] = useState({}); // 1. 데이터 주머니
+  const [answers, setAnswers] = useState({});
 
   const handleChange = (key, value) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
@@ -14,11 +14,16 @@ export default function App({ Component, pageProps }) {
   };
 
   return (
-    <Component 
-      {...pageProps} 
-      answers={answers}   // 👈 이게 꼭 있어야 합니다!
-      handleChange={handleChange} 
-      resetAnswers={resetAnswers}
-    />
+    <>
+      <Component 
+        {...pageProps} 
+        answers={answers} 
+        handleChange={handleChange}
+        resetAnswers={resetAnswers} 
+      />
+      
+      {/* 👇 2. 여기에 위젯 추가! (모든 페이지 공통 적용) */}
+      <ChatWidget />
+    </>
   );
 }
