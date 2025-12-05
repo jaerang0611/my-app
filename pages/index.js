@@ -1,48 +1,66 @@
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function Home() {
-  return (
-    // 전체 배경 및 중앙 정렬
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-[#111]">
-      
-      {/* 배경 꾸밈 효과 (은은한 빛) */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-green-500/20 to-blue-500/20 rounded-full blur-[100px] -z-10"></div>
+  const [moodOn, setMoodOn] = useState(true); // 무드 스위치 (Dark/Light)
 
-      <div className="text-center max-w-3xl space-y-8 p-10">
-        
-        {/* 1. 메인 타이틀 (크고 화려하게) */}
-        <h1 className="text-6xl md:text-8xl font-extrabold tracking-tight">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-blue-400 to-purple-500 leading-tight">
-            Mood-Folio
-          </span>
+  return (
+    <div className={`min-h-screen flex flex-col items-center justify-center p-6 transition-all duration-700 ${moodOn ? 'bg-[#111] text-white' : 'bg-gray-100 text-black'}`}>
+      
+      {/* 1. 타이틀 & 스위치 */}
+      <div className="text-center space-y-8 mb-16 animate-fade-in-up">
+        <h1 className="text-5xl md:text-7xl font-black tracking-tighter">
+          커리어에 <span className={moodOn ? "text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500" : "text-black"}>Mood</span>를 켜다,
+          <br /><span className="block mt-2">MoodFolio</span>
         </h1>
 
-        {/* 2. 서브 타이틀 (설명) */}
-        <p className="text-xl md:text-2xl text-gray-300 leading-relaxed max-w-2xl mx-auto">
-          당신만의 무드가 담긴 포트폴리오, <br className="hidden md:block" />
-          <strong className="text-green-400">AI 코칭</strong>과 함께 완성해보세요.
-        </p>
+        {/* 무드 스위치 UI */}
+        <div className="flex items-center justify-center gap-4">
+          <span className="text-xl font-bold text-gray-500">OFF</span>
+          <button 
+            onClick={() => setMoodOn(!moodOn)}
+            className={`w-20 h-10 rounded-full p-1 shadow-inner transition-colors duration-300 ${moodOn ? 'bg-green-500' : 'bg-gray-300'}`}
+          >
+            <div className={`bg-white w-8 h-8 rounded-full shadow-lg transform transition-transform duration-300 ${moodOn ? 'translate-x-10' : ''}`}></div>
+          </button>
+          <span className={`text-xl font-bold ${moodOn ? 'text-green-400' : 'text-gray-500'}`}>MOOD ON</span>
+        </div>
+      </div>
 
-        {/* 3. 시작 버튼 (가장 돋보이게) */}
-        <div className="mt-12">
-          <Link href="/step1">
-            <button className="group relative inline-flex items-center px-12 py-5 text-xl font-bold text-black transition-all duration-300 bg-gradient-to-r from-green-400 to-blue-500 rounded-full hover:scale-105 hover:shadow-[0_0_30px_rgba(74,222,128,0.7)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 ring-offset-[#111]">
-              <span className="mr-2">지금 시작하기</span>
-              {/* 마우스 올리면 화살표가 움직임 */}
-              <span className="transition-transform group-hover:translate-x-2">🚀</span>
-              
-              {/* 버튼 뒤에 퍼지는 빛 효과 */}
-              <div className="absolute inset-0 h-full w-full rounded-full bg-gradient-to-r from-green-400 to-blue-500 blur-md opacity-70 -z-10 group-hover:opacity-100 transition-opacity"></div>
-            </button>
-          </Link>
+      {/* 2. 로그인 섹션 */}
+      <div className="w-full max-w-sm space-y-6">
+        <p className="text-center text-gray-500 font-medium">⚡️ SNS 계정으로 3초 만에 시작하기</p>
+        
+        {/* SNS 버튼 (UI만) */}
+        <div className="grid grid-cols-4 gap-4">
+          <button className="h-14 bg-white text-black rounded-2xl border border-gray-200 text-xl font-bold hover:scale-105 transition-transform">G</button>
+          <button className="h-14 bg-black text-white rounded-2xl border border-gray-700 text-xl font-bold hover:scale-105 transition-transform"></button>
+          <button className="h-14 bg-[#FEE500] text-[#3c1e1e] rounded-2xl text-sm font-bold hover:scale-105 transition-transform">TALK</button>
+          <button className="h-14 bg-[#03C75A] text-white rounded-2xl text-xl font-bold hover:scale-105 transition-transform">N</button>
         </div>
 
+        <div className="relative py-2">
+          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-600"></span></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className={`px-2 ${moodOn ? 'bg-[#111] text-gray-500' : 'bg-gray-100 text-gray-400'}`}>Or</span></div>
+        </div>
+
+        {/* 이메일 가입 버튼 */}
+        <Link href="/signup">
+          <button className="w-full py-4 rounded-xl border-2 border-dashed border-gray-500 text-gray-400 font-bold hover:border-green-400 hover:text-green-400 transition-all flex items-center justify-center gap-2 group">
+            <span>📧</span> 이메일로 시작하기
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+        </Link>
+
+        {/* 로그인 링크 */}
+        <div className="text-center">
+           <Link href="/login" className="text-sm text-gray-500 underline hover:text-green-400 transition-colors">
+             이미 계정이 있으신가요?
+           </Link>
+        </div>
       </div>
-      
-      {/* 하단 카피라이트 */}
-      <p className="absolute bottom-8 text-gray-600 text-sm">
-        © 2025 Mood-Folio Project. All rights reserved.
-      </p>
+
+      <p className="absolute bottom-6 text-gray-600 text-xs">© 2025 MoodFolio. All rights reserved.</p>
     </div>
   );
 }
