@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 export default function ChatWidget({ customMessage }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isGif, setIsGif] = useState(true); //  নতুন স্টেট 추가
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
     { role: "ai", text: "안녕하세요! AI 자소서 코치입니다. \n포트폴리오 작성이나 면접 고민을 물어보세요! 🤖" }
@@ -66,7 +67,12 @@ export default function ChatWidget({ customMessage }) {
               <span className="text-xl">🎓</span>
               <span className="text-cyan-400 font-bold tracking-wider drop-shadow-md">AI Coach Yong</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-200">✕</button>
+            <div>
+              <button onClick={() => setIsGif(!isGif)} className="text-gray-400 hover:text-white mr-2">
+                {isGif ? "이미지" : "GIF"}
+              </button>
+              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-200">✕</button>
+            </div>
           </div>
           <div ref={scrollRef} className="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-cyan-900 scrollbar-track-transparent">
             {messages.map((msg, idx) => (
@@ -93,27 +99,18 @@ export default function ChatWidget({ customMessage }) {
         </div>
       )}
 
-      {/* 🟢 GIF 사용 코드 */}
+      {/* 🟢 GIF/Image 토글 코드 */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 transition-transform duration-300 hover:scale-110 active:scale-95"
+        className={`fixed bottom-6 right-6 z-50 transition-transform duration-300 hover:scale-110 active:scale-95 ${isOpen && 'hidden'}`}
       >
-        {isOpen ? (
-          /* 닫기 버튼 */
-          <div className="w-14 h-14 bg-gray-700 rounded-full flex items-center justify-center text-2xl text-white shadow-lg border border-gray-500 hover:bg-gray-600">
-            ✕
-          </div>
-        ) : (
-          /* 캐릭터 GIF */
-          // w-40 h-40 숫자를 조절해서 크기를 키우거나 줄이세요
-          <div className="w-40 h-40 relative flex items-center justify-center">
-            <img 
-              src="/character.gif"  // 👈 파일 이름 확인!
-              alt="AI Coach" 
-              className="w-full h-full object-contain" // object-contain: 비율 유지하며 다 보여줌
-            />
-          </div>
-        )}
+        <div className="w-40 h-40 relative flex items-center justify-center">
+          <img 
+            src={isGif ? "/character.gif" : "/file.svg"}  // 👈 isGif 상태에 따라 이미지 변경
+            alt="AI Coach" 
+            className="w-full h-full object-contain"
+          />
+        </div>
       </button>
     </div>
   );
