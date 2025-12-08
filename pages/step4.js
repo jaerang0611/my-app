@@ -73,7 +73,7 @@ export default function Step4({ answers, handleChange }) {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20">
       <div className="w-full max-w-5xl bg-gray-900 border border-gray-700 rounded-2xl p-8 shadow-2xl">
         
-        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-2">
+        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-green-400 to-blue-500 mb-2">
           STEP 4. {isDesigner ? "디자인 갤러리 구성" : "핵심 경력"}
         </h2>
         <p className="text-gray-400 mb-8">
@@ -202,7 +202,7 @@ export default function Step4({ answers, handleChange }) {
           <button onClick={() => router.back()} className="flex-1 py-3 px-6 rounded-lg bg-gray-700 text-gray-300 font-bold hover:bg-gray-600">이전</button>
           <Link href="/step5" className="flex-1" onClick={handleNext}>
             <button className={`w-full py-3 px-6 rounded-lg font-bold transition-all shadow-lg
-              ${isDesigner && filledCount < 6 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-400 to-blue-500 text-black hover:opacity-90'}`}>
+              ${isDesigner && filledCount < 6 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-linear-to-r from-green-400 to-blue-500 text-black hover:opacity-90'}`}>
               다음 단계 →
             </button>
           </Link>

@@ -1,46 +1,94 @@
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { motion } from 'framer-motion';
 
 export default function Home() {
-  const [moodOn, setMoodOn] = useState(true);
+  const router = useRouter();
+  const [isOn, setIsOn] = useState(false);
+
+  // 스위치를 켜면 실행되는 함수
+  const toggleSwitch = () => {
+    if (!isOn) {
+      setIsOn(true);
+      // 0.5초 뒤에 회원가입 페이지(/signup)로 이동
+      setTimeout(() => {
+        router.push('/signup');
+      }, 500);
+    }
+  };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center p-6 transition-all duration-700 ${moodOn ? 'bg-[#111] text-white' : 'bg-gray-100 text-black'}`}>
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center relative overflow-hidden">
       
-      <div className="text-center space-y-8 mb-16 animate-fade-in-up">
-        <h1 className="text-5xl md:text-7xl font-black tracking-tighter">
-          커리어에 <span className={moodOn ? "text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500" : "text-black"}>Mood</span>를 켜다,
-          <br /><span className="block mt-2">MoodFolio</span>
-        </h1>
-
-        <div className="flex items-center justify-center gap-4">
-          <span className="text-xl font-bold text-gray-500">OFF</span>
-          <button 
-            onClick={() => setMoodOn(!moodOn)}
-            className={`w-20 h-10 rounded-full p-1 shadow-inner transition-colors duration-300 ${moodOn ? 'bg-green-500' : 'bg-gray-300'}`}
-          >
-            <div className={`bg-white w-8 h-8 rounded-full shadow-lg transform transition-transform duration-300 ${moodOn ? 'translate-x-10' : ''}`}></div>
-          </button>
-          <span className={`text-xl font-bold ${moodOn ? 'text-green-400' : 'text-gray-500'}`}>MOOD ON</span>
-        </div>
-      </div>
-
-      <div className="w-full max-w-sm space-y-6">
-        <Link href="/signup">
-          <button className="w-full py-4 rounded-xl border-2 border-dashed border-gray-500 text-gray-400 font-bold hover:border-green-400 hover:text-green-400 transition-all flex items-center justify-center gap-2 group">
-            <span>📧</span> 이메일로 시작하기
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
-          </button>
+      {/* 우측 상단 로그인 */}
+      <div className="absolute top-10 right-10 z-50">
+        {/* [수정됨] <a> 태그 제거 후 Link에 직접 스타일 적용 */}
+        <Link 
+          href="/login"
+          className="group flex items-center gap-1 text-xs font-medium tracking-[0.3em] text-gray-500 hover:text-white transition-colors duration-500 uppercase"
+        >
+          Sign In
+          <span className="text-emerald-500 group-hover:text-emerald-400 transition-colors duration-300 text-lg leading-none">.</span>
         </Link>
-
-        <div className="text-center">
-           <Link href="/login" className="text-sm text-gray-500 underline hover:text-green-400 transition-colors">
-             이미 계정이 있으신가요? 로그인
-           </Link>
-        </div>
       </div>
 
-      <p className="absolute bottom-6 text-gray-600 text-xs">© 2025 MoodFolio. All rights reserved.</p>
+      {/* 중앙 타이틀 */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="text-center mb-20 flex flex-col items-center"
+      >
+        <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-gray-100 via-white to-gray-400 mb-6 drop-shadow-2xl">
+          MoodFolio
+        </h1>
+        <p className="text-xl md:text-3xl font-light text-gray-400 tracking-[0.3em] uppercase">
+          커리어에 Mood를 켜다
+        </p>
+      </motion.div>
+
+      {/* 스위치 버튼 (캡슐형) */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        className="flex flex-col items-center gap-4"
+      >
+        <div
+          onClick={toggleSwitch}
+          className={`
+            w-24 h-12 flex items-center p-1 cursor-pointer transition-all duration-500
+            rounded-full border
+            ${isOn 
+              ? "bg-emerald-900/30 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]" 
+              : "bg-white/10 border-white/20 hover:bg-white/20"
+            }
+          `}
+        >
+          <motion.div
+            className={`
+              w-10 h-9 shadow-md flex items-center justify-center
+              rounded-full transition-colors duration-300
+              ${isOn ? "bg-emerald-400" : "bg-gray-300"}
+            `}
+            layout 
+            transition={{ type: "spring", stiffness: 600, damping: 25 }}
+            style={{ 
+              marginLeft: isOn ? "auto" : "0" 
+            }}
+          >
+            {isOn && (
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-1.5 h-4 bg-white/80 rounded-full blur-[1px]" />
+            )}
+          </motion.div>
+        </div>
+        
+        <p className={`text-xs uppercase tracking-widest font-medium transition-colors duration-300 ${isOn ? "text-emerald-400" : "text-gray-600"}`}>
+          {isOn ? "On" : "무드 켜기"}
+        </p>
+      </motion.div>
+
     </div>
   );
 }

@@ -85,7 +85,7 @@ export default function ChatWidget() {
           </div>
 
           {/* 메시지 영역 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#111]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div 
@@ -125,7 +125,7 @@ export default function ChatWidget() {
       {/* 🟢 둥둥 떠있는 버튼 (토글) */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-gradient-to-r from-green-400 to-blue-500 rounded-full shadow-[0_0_20px_rgba(74,222,128,0.5)] flex items-center justify-center text-3xl hover:scale-110 transition-transform"
+        className="w-14 h-14 bg-linear-to-r from-green-400 to-blue-500 rounded-full shadow-[0_0_20px_rgba(74,222,128,0.5)] flex items-center justify-center text-3xl hover:scale-110 transition-transform"
       >
         {isOpen ? '✕' : '💬'}
       </button>

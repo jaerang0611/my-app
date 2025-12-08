@@ -78,9 +78,9 @@ export default function Login() {
   const loginWithKakao = () => { /* 기존 코드 */ };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#111] text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-900 text-white">
       <div className="w-full max-w-md bg-gray-900 p-8 rounded-2xl border border-gray-800 shadow-2xl">
-        <h2 className="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">로그인</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-linear-to-r from-green-400 to-blue-500">로그인</h2>
         
         {/* SNS 버튼 영역 */}
         <div className="flex justify-center gap-4 mb-6">
@@ -106,7 +106,7 @@ export default function Login() {
           <input name="email" type="email" placeholder="example@email.com" onChange={handleChange} className="w-full p-3 bg-gray-800 rounded border border-gray-700 text-white"/>
           <input name="password" type="password" placeholder="********" onChange={handleChange} className="w-full p-3 bg-gray-800 rounded border border-gray-700 text-white"/>
         </div>
-        <button onClick={handleLogin} className="w-full mt-10 py-4 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 text-black font-bold">로그인 하기</button>
+        <button onClick={handleLogin} className="w-full mt-10 py-4 rounded-xl bg-linear-to-r from-green-500 to-blue-500 text-black font-bold">로그인 하기</button>
         <div className="text-center mt-6 flex justify-center gap-4 text-sm"><Link href="/signup" className="text-gray-500 hover:text-white underline">회원가입</Link><span className="text-gray-700">|</span><Link href="/" className="text-gray-500 hover:text-white underline">메인으로</Link></div>
       </div>
     </div>

@@ -50,9 +50,9 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#111] text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-900 text-white">
       <div className="w-full max-w-md bg-gray-900 p-8 rounded-2xl border border-gray-800 shadow-2xl">
-        <h2 className="text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">회원가입</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-linear-to-r from-green-400 to-blue-500">회원가입</h2>
         <div className="space-y-4">
           <input name="email" type="email" placeholder="이메일 (ID)" onChange={handleChange} className="w-full p-3 bg-gray-800 rounded border border-gray-700 text-white"/>
           <input name="password" type="password" placeholder="비밀번호 (8자 이상)" onChange={handleChange} className="w-full p-3 bg-gray-800 rounded border border-gray-700 text-white"/>
@@ -70,7 +70,7 @@ export default function Signup() {
             </div>
           </div>
         </div>
-        <button onClick={handleSignup} disabled={!isAllRequiredChecked} className={`w-full mt-8 py-4 rounded-xl font-bold text-lg transition-all ${isAllRequiredChecked ? 'bg-gradient-to-r from-green-500 to-blue-500 text-black hover:opacity-90' : 'bg-gray-700 text-gray-500'}`}>회원가입 완료</button>
+        <button onClick={handleSignup} disabled={!isAllRequiredChecked} className={`w-full mt-8 py-4 rounded-xl font-bold text-lg transition-all ${isAllRequiredChecked ? 'bg-linear-to-r from-green-500 to-blue-500 text-black hover:opacity-90' : 'bg-gray-700 text-gray-500'}`}>회원가입 완료</button>
         <div className="text-center mt-6"><Link href="/" className="text-sm text-gray-500 hover:text-white underline">메인으로 돌아가기</Link></div>
       </div>
     </div>
