@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-// [확인] 배경 에셋 import가 없는지 확인
-import { JOB_SPECS, normalizeJob } from "../lib/jobData";
+import { LayerBack, TreeLeft, TreeRight, GroundFront } from "./PlaceholderAssets";
+// [수정] normalizeJob은 이제 필요 없어서 제거했습니다.
+import { JOB_SPECS } from "../lib/jobData";
 
-// --- 데이터 설정 (동일) ---
+// --- 데이터 설정 ---
 const MOOD_OPTIONS = ["#차분한", "#열정적인", "#신뢰감있는", "#힙한(Hip)", "#창의적인", "#미니멀한", "#클래식한"];
 const BGM_OPTIONS = ["새벽 코딩 (Lo-Fi)", "카페 백색소음 (Jazz)", "활기찬 시작 (Pop)", "깊은 집중 (Ambient)", "음악 없음 (Mute)"];
 
@@ -19,7 +21,7 @@ const initialQuestions = [
   { id: 'bgm', text: "배경 음악(BGM)을\n골라주세요.", options: BGM_OPTIONS.map(bgm => ({ label: bgm, value: bgm })) }
 ];
 
-// --- 애니메이션 설정 (동일) ---
+// --- 애니메이션 설정 ---
 const titleAnim = {
   initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
@@ -39,9 +41,10 @@ const buttonAnim = {
     transition: { duration: 0.4, ease: "easeInOut", delay: i * 0.05 }
   })
 };
-// [확인] windAnimation 제거됨
 
 export default function HeroSection({ answers, handleChange, onComplete }) {
+  const router = useRouter();
+  
   const [questions, setQuestions] = useState(initialQuestions);
   const [currentStep, setCurrentStep] = useState(0);
   const [localAnswers, setLocalAnswers] = useState(answers || {});
@@ -51,7 +54,7 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
   const currentQuestion = questions[currentStep];
   const isLastStep = currentStep === questions.length - 1;
 
-  // 답변 선택 핸들러 (동일)
+  // 답변 선택 핸들러
   const handleSelect = (value) => {
     const qId = currentQuestion.id;
     let newAnswers = { ...localAnswers };
@@ -67,15 +70,19 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
       newAnswers[qId] = newMoods;
     } else {
       newAnswers[qId] = value;
+      
+      // [수정] 직무(Q1) 선택 시 -> 강점(Q2) 질문 업데이트 로직
       if (qId === 'job') {
-        const jobKey = normalizeJob(value);
+        const jobKey = value; // [핵심 수정] 변환 없이 바로 사용! (이미 'designer' 등이 들어옴)
         const jobData = JOB_SPECS[jobKey];
+
         if (jobData) {
           const strengthOptions = jobData.strengths.map(s => ({
             label: s.label.replace(" (", "\n("),
             value: s.id
           }));
           const jobName = jobData.label.split(" ")[1] || "직무";
+          
           setQuestions(prev => {
             const newQ = [...prev];
             newQ[1] = { id: 'strength', text: `${jobName}로서\n가장 돋보이는 강점은?`, options: strengthOptions };
@@ -88,7 +95,6 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
     if (handleChange) handleChange(qId, newAnswers[qId]);
   };
 
-  // 네비게이션 핸들러 (동일)
   const handleNext = () => {
     if (isLastStep) { if (onComplete) onComplete(localAnswers); } 
     else { setCurrentStep((prev) => prev + 1); }
@@ -105,14 +111,13 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
   };
 
   return (
-    // [확인] 배경 태그 없이 컨텐츠 컨테이너만 존재
-    <div className="relative w-full max-w-4xl h-[60vh] flex flex-col items-center justify-center text-center px-4">
+    <div className="relative w-full h-full flex flex-col items-center justify-center text-center px-4">
         
         <AnimatePresence mode="wait">
           <motion.div key={currentStep} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex flex-col items-center">
             
             <motion.div className="mb-16 flex flex-col items-center" variants={titleAnim} initial="initial" animate="animate" exit="exit">
-              <h2 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg leading-tight whitespace-pre-line">
+              <h2 className="font-serif text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-linear-to-br from-emerald-200 via-white to-blue-200 drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] leading-tight whitespace-pre-line pb-2">
                 {currentQuestion.text}
               </h2>
             </motion.div>
@@ -130,7 +135,7 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
                       relative group flex items-center justify-center
                       rounded-2xl backdrop-blur-md border transition-all duration-300
                       min-w-40 max-w-60 px-8 py-6
-                      bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30 shadow-lg text-lg font-medium text-gray-100
+                      bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30 shadow-lg text-lg font-medium font-sans text-gray-100
                       ${isSelected ? "bg-emerald-600/20 border-emerald-400/60 shadow-[0_0_25px_rgba(16,185,129,0.3)] text-white" : ""}
                       ${isStepValid() && !isSelected ? (qId === 'moods' ? "opacity-70" : "opacity-40 grayscale-50") : "opacity-100"}
                     `}
@@ -143,7 +148,6 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
           </motion.div>
         </AnimatePresence>
         
-        {/* 네비게이션 버튼 영역 (동일) */}
         <div className="flex items-center gap-6 min-h-[50px]">
           <AnimatePresence>
             {currentStep > 0 && (
@@ -157,11 +161,7 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
             {isStepValid() && (
               <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={handleNext} className="group flex items-center gap-3 text-emerald-300 hover:text-white transition-colors text-lg font-semibold tracking-wide">
                 <span>{isLastStep ? "다음 단계로" : "다음 질문"}</span>
-                <span className="p-2 rounded-full bg-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    {isLastStep ? <path d="M20 6 9 17l-5-5"/> : <><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></>}
-                  </svg>
-                </span>
+                <span className="p-2 rounded-full bg-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{isLastStep ? <path d="M20 6 9 17l-5-5"/> : <><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></>}</svg></span>
               </motion.button>
             )}
           </AnimatePresence>

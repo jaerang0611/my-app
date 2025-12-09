@@ -11,7 +11,7 @@ export default function Home() {
   const toggleSwitch = () => {
     if (!isOn) {
       setIsOn(true);
-      // 0.5초 뒤에 회원가입 페이지(/signup)로 이동
+      // 0.5초 뒤에 회원가입/질문 페이지(/signup)로 이동
       setTimeout(() => {
         router.push('/signup');
       }, 500);
@@ -23,7 +23,6 @@ export default function Home() {
       
       {/* 우측 상단 로그인 */}
       <div className="absolute top-10 right-10 z-50">
-        {/* [수정됨] <a> 태그 제거 후 Link에 직접 스타일 적용 */}
         <Link 
           href="/login"
           className="group flex items-center gap-1 text-xs font-medium tracking-[0.3em] text-gray-500 hover:text-white transition-colors duration-500 uppercase"

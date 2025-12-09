@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
 export default function Step3({ answers, handleChange, onNext, onPrev }) {
-  // 로컬 상태로 관리하다가 완료 시 부모에게 전달
   const [localData, setLocalData] = useState(answers || {});
 
   useEffect(() => {
@@ -16,28 +15,33 @@ export default function Step3({ answers, handleChange, onNext, onPrev }) {
       if (onNext) onNext(localData);
   }
 
+  // 공통 입력창 스타일 (유리 질감)
+  const inputStyle = "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white/10 transition-all";
+
   return (
-    // [수정] 반투명 유리 스타일 컨테이너 적용
+    // [수정] 전체 컨테이너: 반투명 유리 스타일
     <div className="w-full max-w-2xl p-8 rounded-3xl bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl">
         
         {/* 타이틀 */}
-        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-emerald-300 to-blue-400 mb-2 drop-shadow-sm">
-          STEP 3. 기본 정보 확인
-        </h2>
-        <p className="text-gray-300 mb-8">입력한 정보를 확인하고 추가 내용을 작성해주세요.</p>
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-emerald-200 via-white to-emerald-200 mb-2 drop-shadow-sm">
+            STEP 3. 기본 정보
+          </h2>
+          <p className="text-emerald-100/70 text-sm">입력한 정보를 확인하고 추가 내용을 작성해주세요.</p>
+        </div>
 
         {/* 입력 폼 영역 */}
         <div className="space-y-6 mb-10">
           
           {/* 이름 (수정 불가) */}
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2">
-              이름 <span className="text-xs text-emerald-400/80 font-normal ml-1">(가입 정보)</span>
+            <label className="block text-sm font-bold text-gray-200 mb-2">
+              이름 <span className="text-xs text-emerald-400/60 font-normal ml-1">(가입 정보)</span>
             </label>
             <input 
               type="text" 
               readOnly 
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 cursor-not-allowed focus:outline-none" 
+              className={`${inputStyle} cursor-not-allowed opacity-60`}
               value={localData.name || ''} 
             />
           </div>
@@ -48,7 +52,7 @@ export default function Step3({ answers, handleChange, onNext, onPrev }) {
             <input 
               type="text" 
               placeholder="예: 3년차 프론트엔드 개발자 김이름입니다." 
-              className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white/15 transition-all" 
+              className={inputStyle}
               value={localData.intro || ''} 
               onChange={(e) => handleLocalChange('intro', e.target.value)} 
             />
@@ -61,20 +65,20 @@ export default function Step3({ answers, handleChange, onNext, onPrev }) {
               <input 
                 type="text" 
                 placeholder="010-0000-0000" 
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white/15 transition-all" 
+                className={inputStyle}
                 value={localData.phone || ''} 
                 onChange={(e) => handleLocalChange('phone', e.target.value)} 
               />
             </div>
             
             <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                이메일 <span className="text-xs text-emerald-400/80 font-normal ml-1">(가입 정보)</span>
+              <label className="block text-sm font-bold text-gray-200 mb-2">
+                이메일 <span className="text-xs text-emerald-400/60 font-normal ml-1">(수정 불가)</span>
               </label>
               <input 
                 type="text" 
                 readOnly 
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 cursor-not-allowed focus:outline-none" 
+                className={`${inputStyle} cursor-not-allowed opacity-60`}
                 value={localData.email || ''} 
               />
             </div>
@@ -86,7 +90,7 @@ export default function Step3({ answers, handleChange, onNext, onPrev }) {
             <input 
               type="text" 
               placeholder="Github, Blog, Notion URL 등" 
-              className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white/15 transition-all" 
+              className={inputStyle}
               value={localData.link || ''} 
               onChange={(e) => handleLocalChange('link', e.target.value)} 
             />
@@ -104,9 +108,9 @@ export default function Step3({ answers, handleChange, onNext, onPrev }) {
           
           <button 
             onClick={handleComplete} 
-            className="flex-1 py-4 px-6 rounded-xl bg-linear-to-r from-emerald-400 to-blue-500 text-black font-bold shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:shadow-[0_0_30px_rgba(52,211,153,0.5)] hover:brightness-110 transition-all transform active:scale-95"
+            className="flex-1 py-4 px-6 rounded-xl bg-linear-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:brightness-110 transition-all transform active:scale-95"
           >
-            모든 설정 완료
+            다음 단계
           </button>
         </div>
 

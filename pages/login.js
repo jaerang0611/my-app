@@ -72,10 +72,75 @@ export default function Login() {
   }, []);
 
 
-  // ... (기존 구글, 카카오, 이메일 로그인 함수들 유지) ...
-  const handleLogin = async () => { /* 기존 코드 */ };
-  const handleGoogleSuccess = async (res) => { /* 기존 코드 */ };
-  const loginWithKakao = () => { /* 기존 코드 */ };
+  // ... (기존 네이버, 이메일, 구글, 카카오 로그인 함수들) ...
+  const handleLogin = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/login", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        handleSuccess(data, "Email");
+      } else {
+        alert("로그인 실패: " + data.detail);
+      }
+    } catch (error) {
+      console.error("로그인 에러", error);
+      alert("로그인 중 문제가 발생했습니다.");
+    }
+  };
+
+  const handleGoogleSuccess = async (res) => {
+    try {
+      const backendRes = await fetch("http://127.0.0.1:8000/google-login", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: res.credential })
+      });
+      const data = await backendRes.json();
+      if (backendRes.ok) {
+        handleSuccess(data, "Google");
+      } else {
+        alert("구글 로그인 실패: " + data.detail);
+      }
+    } catch (error) {
+      console.error("구글 연동 에러", error);
+      alert("구글 로그인 중 문제가 발생했습니다.");
+    }
+  };
+
+  const loginWithKakao = () => {
+    if (window.Kakao && window.Kakao.isInitialized()) {
+      window.Kakao.Auth.login({
+        success: async (authObj) => {
+          try {
+            const res = await fetch("http://127.0.0.1:8000/kakao-login", {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: authObj.access_token })
+            });
+            const data = await res.json();
+            if (res.ok) {
+              handleSuccess(data, "Kakao");
+            } else {
+              alert("카카오 로그인 실패: " + data.detail);
+            }
+          } catch (error) {
+            console.error("카카오 연동 에러", error);
+            alert("카카오 로그인 중 문제가 발생했습니다.");
+          }
+        },
+        fail: (err) => {
+          console.error(err);
+          alert("카카오 로그인에 실패했습니다.");
+        },
+      });
+    } else {
+      alert("카카오 SDK가 로드되지 않았습니다.");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-900 text-white">

@@ -26,7 +26,7 @@ export default function Step5({ answers, handleChange, triggerChatbot }) {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 py-20">
       <div className="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-2xl p-8 shadow-2xl">
         
-        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-2">
+        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-green-400 to-blue-500 mb-2">
           STEP 5. AI 코칭 설정
         </h2>
         <p className="text-gray-400 mb-8">가장 고민되는 점을 선택하면 AI가 도와줍니다.</p>
@@ -57,7 +57,7 @@ export default function Step5({ answers, handleChange, triggerChatbot }) {
             이전
           </button>
           <Link href="/complete" className="flex-1">
-            <button className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold hover:opacity-90 shadow-lg">
+            <button className="w-full py-3 px-6 rounded-lg bg-linear-to-r from-pink-500 to-purple-500 text-white font-bold hover:opacity-90 shadow-lg">
               설정 완료 & 제출하기 ✨
             </button>
           </Link>
