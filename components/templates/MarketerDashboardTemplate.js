@@ -80,11 +80,7 @@ export default function MarketerDashboardTemplate({ answers, isEditing }) {
     <div className="min-h-screen text-slate-100 font-sans relative overflow-x-hidden bg-gray-900 transition-colors duration-500">
       <PortfolioBackground moods={selectedMoods} />
 
-      {selectedBgmTitle !== "음악 없음 (Mute)" && (
-        <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 p-3 rounded-full backdrop-blur-md border border-white/20 bg-white/10 shadow-lg`}>
-          <button onClick={togglePlay} className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900 text-white">{isPlaying ? "⏸" : "▶"}</button>
-        </div>
-      )}
+
 
       <main className="relative z-10 max-w-6xl mx-auto pt-10 pb-20 px-4">
         

@@ -49,6 +49,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
     name = Column(String)
+    portfolio_data = Column(String, nullable=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -80,6 +81,10 @@ class UserAnswers(BaseModel):
 class ChatRequest(BaseModel):
     message: str
 
+class PortfolioUpdate(BaseModel):
+    email: str
+    portfolio_data: dict
+
 # DB 세션
 def get_db():
     db = SessionLocal()
@@ -87,6 +92,31 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# --- [API] 포트폴리오 저장 ---
+@app.post("/save-portfolio")
+def save_portfolio(data: PortfolioUpdate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.portfolio_data = json.dumps(data.portfolio_data)
+    db.commit()
+    return {"message": "Portfolio saved successfully"}
+
+# --- [API] 포트폴리오 불러오기 ---
+@app.get("/get-portfolio/{email}")
+def get_portfolio(email: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.portfolio_data:
+        raise HTTPException(status_code=404, detail="Portfolio data not found")
+
+    return {"portfolio_data": json.loads(user.portfolio_data)}
+
+
 
 # --- [API 1] 이메일 회원가입 ---
 @app.post("/signup")
@@ -108,7 +138,8 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     if not db_user or not pwd_context.verify(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="이메일 또는 비밀번호가 틀렸습니다.")
     
-    return {"message": "로그인 성공", "user_name": db_user.name, "email": db_user.email}
+    portfolio_data = json.loads(db_user.portfolio_data) if db_user.portfolio_data else None
+    return {"message": "로그인 성공", "user_name": db_user.name, "email": db_user.email, "portfolio_data": portfolio_data}
 
 # --- [API 3] 구글 로그인 ---
 @app.post("/google-login")
@@ -125,7 +156,8 @@ def google_login(data: GoogleToken, db: Session = Depends(get_db)):
             db.commit()
             db_user = new_user
         
-        return {"message": "구글 로그인 성공", "user_name": db_user.name, "email": db_user.email}
+        portfolio_data = json.loads(db_user.portfolio_data) if db_user.portfolio_data else None
+        return {"message": "구글 로그인 성공", "user_name": db_user.name, "email": db_user.email, "portfolio_data": portfolio_data}
     except ValueError:
         raise HTTPException(status_code=400, detail="유효하지 않은 구글 토큰입니다.")
 
@@ -156,7 +188,8 @@ def kakao_login(data: KakaoToken, db: Session = Depends(get_db)):
             db.commit()
             db_user = new_user
             
-        return {"message": "카카오 로그인 성공", "user_name": db_user.name, "email": db_user.email}
+        portfolio_data = json.loads(db_user.portfolio_data) if db_user.portfolio_data else None
+        return {"message": "카카오 로그인 성공", "user_name": db_user.name, "email": db_user.email, "portfolio_data": portfolio_data}
     except Exception as e:
         print("카카오 에러:", e)
         raise HTTPException(status_code=400, detail="카카오 로그인 실패")
@@ -188,7 +221,8 @@ def naver_login(data: NaverToken, db: Session = Depends(get_db)):
             db.commit()
             db_user = new_user
             
-        return {"message": "네이버 로그인 성공", "user_name": db_user.name, "email": db_user.email}
+        portfolio_data = json.loads(db_user.portfolio_data) if db_user.portfolio_data else None
+        return {"message": "네이버 로그인 성공", "user_name": db_user.name, "email": db_user.email, "portfolio_data": portfolio_data}
         
     except Exception as e:
         print("네이버 에러:", e)

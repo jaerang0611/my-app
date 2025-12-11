@@ -19,3 +19,11 @@ body {
 .animate-spin-slow {
   animation: spin-slow 3s linear infinite; /* 3초에 한 바퀴 */
 }
+
+/* Google Login Button Size Override */
+.google-login-container > div,
+.google-login-container iframe,
+.google-login-container svg {
+  width: 100% !important;
+  height: 100% !important;
+}

@@ -56,11 +56,7 @@ export default function MarketerFeedTemplate({ answers }) {
     <div className="min-h-screen w-full relative p-0 md:p-8 bg-gray-50 dark:bg-gray-900 transition-colors duration-500">
       <PortfolioBackground moods={selectedMoods} />
       
-      {selectedBgmTitle !== "음악 없음 (Mute)" && (
-        <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 p-3 rounded-full backdrop-blur-md border border-white/20 bg-white/10 shadow-lg`}>
-          <button onClick={togglePlay} className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900 text-white">{isPlaying ? "⏸" : "▶"}</button>
-        </div>
-      )}
+
       
       <div className="w-full max-w-md md:max-w-2xl mx-auto min-h-screen border-x border-white/10 bg-white/70 dark:bg-black/40 backdrop-blur-md relative z-10 shadow-2xl">
         

@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from "react";
 
 export default function ChatWidget({ customMessage }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isGif, setIsGif] = useState(true); //  নতুন স্টেট 추가
+
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
-    { role: "ai", text: "안녕하세요! AI 자소서 코치입니다. \n포트폴리오 작성이나 면접 고민을 물어보세요! 🤖" }
+    { role: "ai", text: "안녕하세요! 포포(Popo)입니다.🌱\n혼자 쓰기 막막한 포트폴리오,\n저랑 같이 쉽고 빠르게 완성해볼까요?" }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef(null);
@@ -17,6 +17,7 @@ export default function ChatWidget({ customMessage }) {
   }, [messages, isOpen]);
 
   const sendMessage = async () => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     if (!input.trim()) return;
     const userMsg = input;
     setMessages((prev) => [...prev, { role: "user", text: userMsg }]);
@@ -24,7 +25,7 @@ export default function ChatWidget({ customMessage }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/chat", {
+      const res = await fetch(`${apiUrl}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg }), 
@@ -61,16 +62,14 @@ export default function ChatWidget({ customMessage }) {
 
       {/* 채팅창 본체 */}
       {isOpen && (
-        <div className="mb-4 w-[360px] h-[550px] bg-black/90 border border-cyan-500 rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.6)] flex flex-col overflow-hidden backdrop-blur-md animate-fade-in-up transition-all duration-300">
-          <div className="bg-cyan-950/80 p-4 border-b border-cyan-500/50 flex justify-between items-center">
+        <div className="mb-4 w-[360px] h-[550px] bg-black/90 border-emerald-500 rounded-2xl shadow-[0_0_25px_rgba(16,185,129,0.6)] flex flex-col overflow-hidden backdrop-blur-md animate-fade-in-up transition-all duration-300">
+          <div className="bg-emerald-950/80 p-4 border-b border-emerald-500/50 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="text-xl">🎓</span>
-              <span className="text-cyan-400 font-bold tracking-wider drop-shadow-md">AI Coach Yong</span>
+              <span className="text-xl">🌱</span>
+              <span className="text-emerald-400 font-bold tracking-wider drop-shadow-md">Career Mate 포포</span>
             </div>
             <div>
-              <button onClick={() => setIsGif(!isGif)} className="text-gray-400 hover:text-white mr-2">
-                {isGif ? "이미지" : "GIF"}
-              </button>
+
               <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-200">✕</button>
             </div>
           </div>
@@ -78,7 +77,7 @@ export default function ChatWidget({ customMessage }) {
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[85%] p-3 text-sm leading-relaxed rounded-2xl shadow-sm ${
-                  msg.role === "user" ? "bg-cyan-700 text-white rounded-tr-none" : "bg-gray-800 text-gray-200 border border-gray-700 rounded-tl-none"
+                  msg.role === "user" ? "bg-emerald-700 text-white rounded-tr-none" : "bg-gray-800 text-gray-200 border border-gray-700 rounded-tl-none"
                 }`}>
                   <p className="whitespace-pre-wrap">{msg.text}</p>
                 </div>
@@ -86,15 +85,15 @@ export default function ChatWidget({ customMessage }) {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-800 border border-gray-700 p-3 rounded-2xl rounded-tl-none text-cyan-500 text-xs flex items-center gap-2 animate-pulse">
+                <div className="bg-gray-800 border border-gray-700 p-3 rounded-2xl rounded-tl-none text-emerald-500 text-xs flex items-center gap-2 animate-pulse">
                   <span>AI가 생각 중입니다...</span><span className="animate-spin">⏳</span>
                 </div>
               </div>
             )}
           </div>
           <div className="p-3 bg-gray-900/90 border-t border-gray-700 flex gap-2">
-            <input className="flex-1 bg-gray-800 text-white text-sm rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all" placeholder="궁금한 점을 입력하세요..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} />
-            <button onClick={sendMessage} disabled={isLoading} className="bg-linear-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white rounded-full w-12 h-12 flex items-center justify-center transition-all shadow-lg hover:shadow-cyan-500/50">➤</button>
+            <input className="flex-1 bg-gray-800 text-white text-sm rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500 transition-all" placeholder="궁금한 점을 입력하세요..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} />
+            <button onClick={sendMessage} disabled={isLoading} className="bg-linear-to-r from-emerald-600 to-teal-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 text-white rounded-full w-12 h-12 flex items-center justify-center transition-all shadow-lg hover:shadow-cyan-500/50">➤</button>
           </div>
         </div>
       )}
@@ -106,7 +105,7 @@ export default function ChatWidget({ customMessage }) {
       >
         <div className="w-40 h-40 relative flex items-center justify-center">
           <img 
-            src={isGif ? "/character.gif" : "/file.svg"}  // 👈 isGif 상태에 따라 이미지 변경
+            src="/character.gif"  // 👈 isGif 상태에 따라 이미지 변경
             alt="AI Coach" 
             className="w-full h-full object-contain"
           />

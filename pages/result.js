@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // 무드 이펙트 & 에디터
 import MoodEffectLayer from '../components/MoodEffectLayer';
@@ -26,11 +26,28 @@ import ServiceWikiTemplate from '../components/templates/ServiceWikiTemplate';
 
 // BGM 파일 목록
 const bgmFiles = {
-  "새벽 코딩 (Lo-Fi)": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3", 
-  "카페 백색소음 (Jazz)": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3",
-  "활기찬 시작 (Pop)": "https://cdn.pixabay.com/download/audio/2022/10/25/audio_9593259345.mp3",
-  "깊은 집중 (Ambient)": "https://cdn.pixabay.com/download/audio/2022/03/10/audio_5b98f26703.mp3",
-  "음악 없음 (Mute)": null
+  "Smart & Professional": [
+    "/music/Midnight Logic.mp3",
+    "/music/Deep Dive.mp3",
+    "/music/Urban Step.mp3",
+    "/music/Gray Jazz.mp3",
+    "/music/Afternoon Tea.mp3"
+  ],
+  "Emotion & Storytelling": [
+    "/music/Modern Art.mp3",
+    "/music/Silent Space.mp3",
+    "/music/White Page.mp3",
+    "/music/Wooden Memory.mp3",
+    "/music/Silk Wave.mp3",
+    "/music/Fresh Awake.mp3"
+  ],
+  "Impact & Creative": [
+    "/music/The Voyage.mp3",
+    "/music/Mystic East.mp3",
+    "/music/The Legend.mp3",
+    "/music/Glorious Moment.mp3"
+  ],
+  "Mute": null
 };
 
 export default function ResultPage() {
@@ -45,30 +62,28 @@ export default function ResultPage() {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
+  const [currentSongTitle, setCurrentSongTitle] = useState('');
+  const [isMuted, setIsMuted] = useState(false);
+  
+  // --- BGM History Logic ---
+  const [songHistory, setSongHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
 
   useEffect(() => {
-    const savedData = localStorage.getItem('portfolio_data');
-    if (savedData) {
-      const parsed = JSON.parse(savedData);
-      setUserData(parsed);
-      setInitialJob(parsed.job); 
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
     }
-  }, []);
+  }, [isMuted]);
 
-  // 데이터 변경 시 자동 저장
-  useEffect(() => {
-    if (userData) {
-      localStorage.setItem('portfolio_data', JSON.stringify(userData));
-    }
-  }, [userData]);
-
-  // BGM 재생
-  useEffect(() => {
-    if (!userData) return;
-    const selectedBgm = userData.bgm || "음악 없음 (Mute)";
-    const bgmUrl = bgmFiles[selectedBgm];
-
+  // 🎵 Function to play a specific song URL
+  const playSong = (bgmUrl) => {
     if (bgmUrl) {
+      const title = bgmUrl.split('/').pop().replace('.mp3', '');
+      setCurrentSongTitle(decodeURIComponent(title));
       if (!audioRef.current) audioRef.current = new Audio(bgmUrl);
       else audioRef.current.src = bgmUrl;
 
@@ -76,13 +91,77 @@ export default function ResultPage() {
       audioRef.current.volume = volume;
       audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
     } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
+      if (audioRef.current) audioRef.current.pause();
+      setIsPlaying(false);
+      setCurrentSongTitle('');
+    }
+  };
+
+  // 🎵 Function to play the next song (random or from history)
+  const playNextSong = () => {
+    if (!userData) return;
+
+    // If we are in the middle of history, play the next song from history
+    if (historyIndex < songHistory.length - 1) {
+      const nextIndex = historyIndex + 1;
+      setHistoryIndex(nextIndex);
+      playSong(songHistory[nextIndex]);
+      return;
+    }
+
+    // Otherwise, play a new random song
+    const selectedBgmCategory = userData.bgm || "음악 없음 (Mute)";
+    const musicList = bgmFiles[selectedBgmCategory];
+    if (Array.isArray(musicList) && musicList.length > 0) {
+      let randomIndex;
+      let nextSongUrl;
+      // Avoid playing the same song twice in a row if possible
+      do {
+        randomIndex = Math.floor(Math.random() * musicList.length);
+        nextSongUrl = musicList[randomIndex];
+      } while (musicList.length > 1 && nextSongUrl === songHistory[historyIndex]);
+
+      const newHistory = [...songHistory, nextSongUrl];
+      setSongHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+      playSong(nextSongUrl);
+    }
+  };
+  
+  // 🎵 Function to play the previous song from history
+  const playPreviousSong = () => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      setHistoryIndex(prevIndex);
+      playSong(songHistory[prevIndex]);
+    }
+  };
+
+  // Main BGM useEffect: Triggers when the BGM *category* changes
+  useEffect(() => {
+    if (userData?.bgm) {
+      setSongHistory([]);
+      setHistoryIndex(-1);
+      playNextSong(); 
     }
     return () => { if (audioRef.current) audioRef.current.pause(); };
   }, [userData?.bgm]);
+
+  // General useEffects for setup and data saving
+  useEffect(() => {
+    const savedData = localStorage.getItem('portfolio_data');
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      setUserData(parsed);
+      setInitialJob(parsed.job);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userData) {
+      localStorage.setItem('portfolio_data', JSON.stringify(userData));
+    }
+  }, [userData]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -163,24 +242,73 @@ export default function ResultPage() {
         </button>
 
         {/* BGM 플레이어 */}
-        {userData.bgm !== "음악 없음 (Mute)" && (
-          <div className="flex items-center gap-3 p-3 rounded-full backdrop-blur-md border border-white/20 bg-black/40 shadow-lg text-white">
-            <button onClick={togglePlay} className="w-10 h-10 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 transition-transform">
-              {isPlaying ? "⏸" : "▶"}
-            </button>
-            <div className="flex flex-col pr-2">
-              <span className="text-xs font-bold mb-1 px-1 line-clamp-1 max-w-[100px]">
-                 {userData.bgm?.split('(')[0] || 'Music'}
-              </span>
-              <input 
-                type="range" min="0" max="1" step="0.1" 
-                value={volume} onChange={handleVolumeChange} 
-                className="w-24 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-emerald-400"
-              />
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {userData.bgm !== "Mute" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-center gap-2 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg text-white"
+            >
+              <button 
+                onClick={playPreviousSong}
+                disabled={historyIndex <= 0}
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 17 6 12 11 7 11 17"></polygon><polygon points="18 17 13 12 18 7 18 17"></polygon></svg>
+              </button>
+              <button 
+                onClick={togglePlay} 
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all group"
+              >
+                {isPlaying ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h4v16H6zM14 4h4v16h-4z"></path></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                )}
+              </button>
+              <button 
+                onClick={playNextSong} 
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all group"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 17 18 12 13 7 13 17"></polygon><polygon points="6 17 11 12 6 7 6 17"></polygon></svg>
+              </button>
+              <div className="flex flex-col justify-center w-32">
+                <div className="w-full overflow-hidden">
+                  <p className="text-sm font-bold whitespace-nowrap marquee">{currentSongTitle || 'Loading...'}</p>
+                </div>
+                <div className="w-full flex items-center gap-2 mt-1">
+                  <button onClick={toggleMute} className="text-white/60 hover:text-white transition-colors">
+                    {isMuted ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
+                    )}
+                  </button>
+                  <input 
+                    type="range" min="0" max="1" step="0.05" 
+                    value={volume} onChange={handleVolumeChange} 
+                    className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      <style jsx global>{`
+        .marquee {
+          display: inline-block;
+          white-space: nowrap;
+          animation: marquee 10s linear infinite;
+        }
+        @keyframes marquee {
+          0%   { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+      `}</style>
 
       {/* 에디터 패널 */}
       <AnimatePresence>

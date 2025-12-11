@@ -7,7 +7,7 @@ import { JOB_SPECS } from "../lib/jobData";
 
 // --- 데이터 설정 ---
 const MOOD_OPTIONS = ["#차분한", "#열정적인", "#신뢰감있는", "#힙한(Hip)", "#창의적인", "#미니멀한", "#클래식한"];
-const BGM_OPTIONS = ["새벽 코딩 (Lo-Fi)", "카페 백색소음 (Jazz)", "활기찬 시작 (Pop)", "깊은 집중 (Ambient)", "음악 없음 (Mute)"];
+const BGM_OPTIONS = ["Smart & Professional", "Emotion & Storytelling", "Impact & Creative", "Mute"];
 
 const initialJobOptions = Object.entries(JOB_SPECS).map(([key, data]) => ({
   label: data.label.split(" (")[0] + "\n(" + data.label.split(" (")[1],
@@ -51,7 +51,10 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
   
   useEffect(() => { setLocalAnswers(answers || {}); }, [answers]);
 
+  console.log('HeroSection Debug: questions', questions);
+  console.log('HeroSection Debug: currentStep', currentStep);
   const currentQuestion = questions[currentStep];
+  console.log('HeroSection Debug: currentQuestion', currentQuestion);
   const isLastStep = currentStep === questions.length - 1;
 
   // 답변 선택 핸들러
@@ -128,6 +131,9 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
                 let isSelected = false;
                 if (qId === 'moods') isSelected = localAnswers.moods?.includes(option.value);
                 else isSelected = localAnswers[qId] === option.value;
+
+                const selectedClasses = "bg-emerald-500 border-emerald-300 text-white shadow-[0_0_25px_rgba(16,185,129,0.5)]";
+                const unselectedClasses = "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30 text-gray-100";
                 
                 return (
                   <motion.button key={option.value} onClick={() => handleSelect(option.value)} custom={idx} variants={buttonAnim} initial="initial" animate="animate" exit="exit" whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }}
@@ -135,8 +141,8 @@ export default function HeroSection({ answers, handleChange, onComplete }) {
                       relative group flex items-center justify-center
                       rounded-2xl backdrop-blur-md border transition-all duration-300
                       min-w-40 max-w-60 px-8 py-6
-                      bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30 shadow-lg text-lg font-medium font-sans text-gray-100
-                      ${isSelected ? "bg-emerald-600/20 border-emerald-400/60 shadow-[0_0_25px_rgba(16,185,129,0.3)] text-white" : ""}
+                      shadow-lg text-lg font-medium font-sans
+                      ${isSelected ? selectedClasses : unselectedClasses}
                       ${isStepValid() && !isSelected ? (qId === 'moods' ? "opacity-70" : "opacity-40 grayscale-50") : "opacity-100"}
                     `}
                   >

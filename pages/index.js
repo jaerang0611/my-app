@@ -27,7 +27,7 @@ export default function Home() {
           href="/login"
           className="group flex items-center gap-1 text-xs font-medium tracking-[0.3em] text-gray-500 hover:text-white transition-colors duration-500 uppercase"
         >
-          Sign In
+          LOG IN
           <span className="text-emerald-500 group-hover:text-emerald-400 transition-colors duration-300 text-lg leading-none">.</span>
         </Link>
       </div>

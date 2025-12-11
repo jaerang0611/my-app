@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import ChatWidget from '../components/ChatWidget';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Script from 'next/script';
+import Head from 'next/head';
 
 // [추가 1] 폰트 설정을 위해 import
 import { Noto_Sans_KR, Gowun_Batang } from 'next/font/google';
@@ -52,6 +53,9 @@ export default function App({ Component, pageProps }) {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       {/* [추가] 폰트 변수를 최상위 div에 적용하여 전역에서 사용 가능하게 함 */}
       <div className={`${notoSansKr.variable} ${gowunBatang.variable} font-sans antialiased`}>
+        <Head>
+          <title>MoodFolio</title>
+        </Head>
         
         {/* 카카오 SDK 로드 */}
         <Script

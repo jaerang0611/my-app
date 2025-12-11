@@ -107,11 +107,7 @@ export default function DesignerGalleryTemplate({ answers, isEditing }) {
     <div className="min-h-screen relative p-6 md:p-10 bg-gray-50 dark:bg-gray-900 transition-colors duration-500">
       <PortfolioBackground moods={selectedMoods} />
 
-      {selectedBgmTitle !== "음악 없음 (Mute)" && (
-        <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 p-3 rounded-full backdrop-blur-md border ${cardBorder} bg-white/10 shadow-lg`}>
-          <button onClick={togglePlay} className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900 text-white hover:scale-105 transition-transform">{isPlaying ? "⏸" : "▶"}</button>
-        </div>
-      )}
+
 
       <main className="relative z-10 max-w-7xl mx-auto pt-10 pb-20">
         

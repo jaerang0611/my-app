@@ -6,6 +6,7 @@ import { GoogleLogin } from '@react-oauth/google';
 export default function Login() {
   const router = useRouter();
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   // 👇 [필수] 여기에 네이버 Client ID를 넣으세요!
   const NAVER_CLIENT_ID = "swARffOTqIry7j2VG7GK";
@@ -20,7 +21,15 @@ export default function Login() {
     alert(`🎉 환영합니다, ${data.user_name}님! (${type})`);
     localStorage.setItem('user_name', data.user_name);
     localStorage.setItem('user_email', data.email);
-    router.push('/step1');
+
+    // Save portfolio data from backend to local storage, or clear it if null
+    if (data.portfolio_data) {
+      localStorage.setItem('portfolio_data', JSON.stringify(data.portfolio_data));
+    } else {
+      localStorage.removeItem('portfolio_data');
+    }
+
+    router.push('/result');
   };
 
   // --- 네이버 로그인 로직 (팝업) ---
@@ -43,7 +52,7 @@ export default function Login() {
       const token = window.location.hash.split('=')[1].split('&')[0];
       
       // 백엔드로 전송
-      fetch("http://127.0.0.1:8000/naver-login", {
+      fetch(`${apiUrl}/naver-login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: token })
@@ -56,7 +65,7 @@ export default function Login() {
           if (window.opener) {
              // 팝업인 경우: 부모창에게 알림 (여기선 간단히 alert 후 닫기)
              alert(`네이버 로그인 성공! ${data.user_name}님 환영합니다.`);
-             window.opener.location.href = "/step1";
+             window.opener.location.href = "/result";
              window.opener.localStorage.setItem('user_name', data.user_name);
              window.opener.localStorage.setItem('user_email', data.email);
              window.close();
@@ -75,7 +84,7 @@ export default function Login() {
   // ... (기존 네이버, 이메일, 구글, 카카오 로그인 함수들) ...
   const handleLogin = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/login", {
+      const res = await fetch(`${apiUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -94,7 +103,7 @@ export default function Login() {
 
   const handleGoogleSuccess = async (res) => {
     try {
-      const backendRes = await fetch("http://127.0.0.1:8000/google-login", {
+      const backendRes = await fetch(`${apiUrl}/google-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: res.credential })
@@ -116,7 +125,7 @@ export default function Login() {
       window.Kakao.Auth.login({
         success: async (authObj) => {
           try {
-            const res = await fetch("http://127.0.0.1:8000/kakao-login", {
+            const res = await fetch(`${apiUrl}/kakao-login`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ token: authObj.access_token })

@@ -17,22 +17,188 @@ const windAnimation = {
 // ==========================================
 // [내부 컴포넌트 1] 회원가입 폼
 // ==========================================
+import Modal from '../../components/Modal';
+
 function SignupForm({ onComplete }) {
   const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '', name: '' });
   const [agreements, setAgreements] = useState({ terms: false, privacy: false, marketing: false });
+  const [modalContent, setModalContent] = useState(null);
 
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const NAVER_CLIENT_ID = "swARffOTqIry7j2VG7GK"; 
+  const NAVER_CALLBACK_URL = typeof window !== 'undefined' ? `${window.location.origin}/signup` : '';
+
+  // --- Modal Logic ---
+  const openModal = (type) => {
+    if (type === 'terms') {
+      setModalContent({ 
+        title: '서비스 이용약관', 
+        content: `MoodFolio 서비스 이용약관
+제1조 (목적)
+본 약관은 MoodFolio(이하 "회사")가 제공하는 AI 기반 포트폴리오 생성 서비스(이하 "서비스")의 이용 조건 및 절차, 이용자와 회사의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
+제2조 (회원가입 및 계정)
+이용자는 회사가 정한 가입 양식에 따라 회원정보를 기입함으로써 회원가입을 신청합니다.
+타인의 정보를 도용하거나 허위 정보를 등록한 경우 서비스 이용이 제한될 수 있습니다.
+아이디(이메일)와 비밀번호의 관리 책임은 회원 본인에게 있으며, 이를 제3자가 이용하게 해서는 안 됩니다.
+제3조 (서비스의 제공 및 변경)
+회사는 사용자가 입력한 데이터를 바탕으로 AI 분석을 통해 웹페이지 형태의 포트폴리오를 제공합니다.
+회사는 서비스 개선을 위해 예고 없이 디자인이나 기능을 변경할 수 있습니다.
+생성된 포트폴리오의 레이아웃, BGM 등의 요소는 AI 알고리즘에 의해 자동 추천되므로, 완벽한 정확성을 보장하지 않습니다.
+제4조 (저작권 및 데이터 활용)
+회원이 작성한 데이터와 생성된 포트폴리오의 저작권은 회원 본인에게 귀속됩니다.
+단, 회사는 서비스 품질 향상 및 AI 모델 학습을 위해 회원이 입력한 데이터를 개인을 식별할 수 없는 형태로 가공하여 활용할 수 있습니다.
+제5조 (금지행위)
+회원은 다음 각 호의 행위를 해서는 안 됩니다.
+타인의 명의나 정보를 도용하는 행위
+허위 경력이나 사실이 아닌 내용을 포함하여 포트폴리오를 생성하는 행위
+서비스의 안정적인 운영을 방해하거나 해킹을 시도하는 행위
+제6조 (면책조항)
+회사는 천재지변 또는 이에 준하는 불가항력으로 인해 서비스를 제공할 수 없는 경우 책임이 면제됩니다.
+회사는 회원이 서비스를 이용하여 기대하는 수익을 상실한 것에 대하여 책임을 지지 않으며, 서비스를 통해 얻은 자료로 인한 손해에 관하여 책임을 지지 않습니다.
+부칙
+본 약관은 2025년 12월 10일부터 시행합니다.` 
+      });
+    } else if (type === 'privacy') {
+      setModalContent({ 
+        title: '개인정보 수집 및 이용 동의', 
+        content: `개인정보 수집 및 이용 약관
+MoodFolio(이하 "회사")는 포트폴리오 생성 서비스를 제공하기 위해 아래와 같이 개인정보를 수집 및 이용합니다. 내용을 자세히 읽으신 후 동의해 주시기 바랍니다.
+1. 개인정보 수집 및 이용 목적
+회원 식별 및 관리: 서비스 이용에 따른 본인 확인, 개인 식별, 불량 회원의 부정 이용 방지와 비인가 사용 방지
+서비스 제공: AI 기반 포트폴리오 결과물 생성, 저장 및 관리, 맞춤형 서비스(무드, 레이아웃 추천 등) 제공
+2. 수집하는 개인정보의 항목
+필수 항목: 이름, 이메일, 비밀번호
+서비스 이용 과정에서 수집되는 항목: 사용자 입력 경력 데이터(직무, 프로젝트 경험, 기술 스택, 자기소개 등 포트폴리오 생성에 필요한 일체 정보)
+3. 개인정보의 보유 및 이용 기간
+회사는 원칙적으로 이용자의 회원 탈퇴 시까지 개인정보를 보유 및 이용합니다.
+단, 관계 법령의 규정에 의하여 보존할 필요가 있는 경우 회사는 해당 법령에서 정한 일정한 기간 동안 회원정보를 보관합니다.
+4. 동의 거부 권리 및 불이익
+이용자는 개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있습니다. 단, 필수 항목의 수집 및 이용에 동의하지 않을 경우 회원가입 및 서비스 이용이 제한될 수 있습니다.` 
+      });
+    }
+  };
+  const closeModal = () => setModalContent(null);
+
+  // --- Social Login Success Handler ---
   const handleSocialSuccess = (data, type) => {
-    alert(`🎉 ${type} 계정으로 가입되었습니다.`);
+    alert(`🎉 ${type} 계정으로 가입되었습니다. 다음 단계를 진행합니다.`);
     onComplete({ 
-        email: data.email || "social@login.com", 
-        name: data.user_name || "Social User",
-        password: "social-login-password" 
+        email: data.email, 
+        name: data.user_name,
+        password: "social-login-password" // Social logins don't have a password
     });
   };
-  const handleGoogleSuccess = (res) => handleSocialSuccess({ user_name: "Google User" }, "Google");
-  const loginWithKakao = () => alert("카카오 로그인 (구현 필요)");
-  const loginWithNaver = () => alert("네이버 로그인 (구현 필요)");
 
+  // --- Google Login ---
+  const handleGoogleSuccess = async (res) => {
+    try {
+      const backendRes = await fetch(`${apiUrl}/google-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: res.credential })
+      });
+      const data = await backendRes.json();
+      if (backendRes.ok) {
+        handleSocialSuccess(data, "Google");
+      } else {
+        alert("구글 연동 실패: " + data.detail);
+      }
+    } catch (error) {
+      console.error("Google-Signup-Error:", error);
+      alert("서버와 통신 중 오류가 발생했습니다.");
+    }
+  };
+
+  // --- Kakao Login ---
+  const loginWithKakao = () => {
+    if (window.Kakao && window.Kakao.isInitialized()) {
+      window.Kakao.Auth.login({
+        success: async (authObj) => {
+          try {
+            const res = await fetch(`${apiUrl}/kakao-login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: authObj.access_token })
+            });
+            const data = await res.json();
+            if (res.ok) {
+              handleSocialSuccess(data, "Kakao");
+            } else {
+              alert("카카오 연동 실패: " + data.detail);
+            }
+          } catch (error) {
+            console.error("Kakao-Signup-Error:", error);
+            alert("서버와 통신 중 오류가 발생했습니다.");
+          }
+        },
+        fail: (err) => {
+          console.error(err);
+          alert("카카오 로그인에 실패했습니다.");
+        },
+      });
+    }
+  };
+
+  // --- Naver Login ---
+  const loginWithNaver = () => {
+    const state = Math.random().toString(36).substring(7);
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=token&client_id=${NAVER_CLIENT_ID}&redirect_uri=${encodeURIComponent(NAVER_CALLBACK_URL)}&state=${state}`;
+    window.open(naverAuthUrl, 'naverloginpop', 'width=500,height=600');
+  };
+
+  useEffect(() => {
+    const handleNaverCallback = (data) => {
+      handleSocialSuccess(data, "Naver");
+    };
+    window.handleNaverCallback = handleNaverCallback;
+    
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+      const token = window.location.hash.split('=')[1].split('&')[0];
+      fetch(`${apiUrl}/naver-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: token })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user_name && window.opener && window.opener.handleNaverCallback) {
+          window.opener.handleNaverCallback(data);
+          window.close();
+        }
+      })
+      .catch(err => console.error("Naver-Popup-Error:", err));
+    }
+    
+    return () => { delete window.handleNaverCallback; };
+  }, []);
+
+  // --- Email Signup ---
+  const handleSignup = async () => {
+    if (!formData.email || !formData.password || !formData.name) return alert("필수 항목을 입력해주세요.");
+    if (formData.password !== formData.confirmPassword) return alert("비밀번호가 일치하지 않습니다.");
+    if (!agreements.terms || !agreements.privacy) return alert("필수 약관에 동의해주세요.");
+
+    try {
+      const response = await fetch(`${apiUrl}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password, name: formData.name }),
+      });
+
+      if (response.ok) {
+        alert("회원가입에 성공했습니다! 다음 단계를 진행합니다.");
+        onComplete(formData);
+      } else {
+        const errorData = await response.json();
+        alert(`회원가입 실패: ${errorData.detail || '알 수 없는 오류'}`);
+      }
+    } catch (error) {
+      console.error("Signup API error:", error);
+      alert("서버와 통신 중 오류가 발생했습니다.");
+    }
+  };
+
+  // ... (rest of the component's state and handlers for form input and agreements are unchanged)
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -47,24 +213,23 @@ function SignupForm({ onComplete }) {
   };
   const isAllRequiredChecked = agreements.terms && agreements.privacy;
 
-  const handleSignup = () => {
-    if (!formData.email || !formData.password || !formData.name) return alert("필수 항목을 입력해주세요.");
-    if (formData.password !== formData.confirmPassword) return alert("비밀번호가 일치하지 않습니다.");
-    if (!isAllRequiredChecked) return alert("필수 약관에 동의해주세요.");
-    onComplete(formData);
-  };
-
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }} className="w-full max-w-md p-8 rounded-3xl bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl">
       <h2 className="text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-linear-to-r from-emerald-300 to-blue-400 font-serif">회원가입</h2>
       
       {/* 소셜 로그인 */}
       <div className="flex justify-center gap-4 mb-6">
-        <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-white cursor-pointer hover:scale-110 transition shadow-lg">
-            <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => console.log('Fail')} type="icon" theme="filled_black" shape="circle" />
+        {/* 구글 */}
+                  <div className="google-login-container w-12 h-12 rounded-full overflow-hidden flex items-center justify-center">           <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => console.log('Fail')} type="icon" theme="filled_black" shape="circle" />
         </div>
-        <button onClick={loginWithKakao} className="w-12 h-12 bg-[#FEE500] rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg text-black font-bold text-xs">TALK</button>
-        <button onClick={loginWithNaver} className="w-12 h-12 bg-[#03C75A] rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg text-white font-bold text-lg">N</button>
+        {/* 카카오 */}
+        <button onClick={loginWithKakao} className="w-12 h-12 bg-[#FEE500] rounded-full flex items-center justify-center hover:opacity-90">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#3c1e1e"><path d="M12 3c-5.52 0-10 3.68-10 8.21 0 2.91 1.87 5.48 4.75 6.95-.21.78-.76 2.76-.87 3.16-.14.51.19.51.39.37.16-.11 2.56-1.74 3.57-2.42.69.1 1.41.15 2.16.15 5.52 0 10-3.68 10-8.21C22 6.68 17.52 3 12 3z"/></svg>
+        </button>
+        {/* 네이버 */}
+        <button onClick={loginWithNaver} className="w-12 h-12 bg-[#03C75A] rounded-full flex items-center justify-center hover:opacity-90 text-white font-black text-xl">
+          N
+        </button>
       </div>
 
       <div className="flex items-center gap-3 mb-6">
@@ -80,18 +245,27 @@ function SignupForm({ onComplete }) {
         ))}
         <div className="space-y-3 mt-6 p-4 bg-white/5 rounded-xl border border-white/5">
           <div className="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="all" checked={isAllRequiredChecked} onChange={handleAllAgreement} className="accent-emerald-500 w-5 h-5 cursor-pointer"/><label htmlFor="all" className="text-sm font-bold text-gray-200 cursor-pointer">약관 전체 동의</label></div>
-          <div className="pl-2 space-y-2 text-xs text-gray-400">
-            <div className="flex items-center gap-2"><input type="checkbox" name="terms" checked={agreements.terms} onChange={handleAgreementChange} className="accent-emerald-500 cursor-pointer"/> [필수] 서비스 이용약관</div>
-            <div className="flex items-center gap-2"><input type="checkbox" name="privacy" checked={agreements.privacy} onChange={handleAgreementChange} className="accent-emerald-500 cursor-pointer"/> [필수] 개인정보 수집 및 이용</div>
-          </div>
-        </div>
+            <div className="pl-2 space-y-2 text-xs text-gray-400">
+            <div className="flex items-center gap-2"><input type="checkbox" name="terms" checked={agreements.terms} onChange={handleAgreementChange} className="accent-emerald-500 cursor-pointer"/> <span>[필수] 서비스 이용약관</span> <button type="button" onClick={() => openModal('terms')} className="ml-auto px-2 py-1 text-xs text-emerald-400 border border-emerald-400 rounded hover:bg-emerald-400 hover:text-white transition-colors">보기</button></div>
+            <div className="flex items-center gap-2"><input type="checkbox" name="privacy" checked={agreements.privacy} onChange={handleAgreementChange} className="accent-emerald-500 cursor-pointer"/> <span>[필수] 개인정보 수집 및 이용</span> <button type="button" onClick={() => openModal('privacy')} className="ml-auto px-2 py-1 text-xs text-emerald-400 border border-emerald-400 rounded hover:bg-emerald-400 hover:text-white transition-colors">보기</button></div>
+          </div>        </div>
       </div>
       <button onClick={handleSignup} disabled={!isAllRequiredChecked} className={`w-full mt-6 py-4 rounded-xl font-bold text-lg transition-all transform active:scale-95 ${isAllRequiredChecked ? 'bg-linear-to-r from-emerald-400 to-blue-500 text-black shadow-[0_0_20px_rgba(52,211,153,0.4)]' : 'bg-gray-700/50 text-gray-500 cursor-not-allowed border border-white/5'}`}>이메일로 회원가입</button>
       <div className="text-center mt-6"><Link href="/" className="text-sm text-gray-400 hover:text-white underline transition-colors underline-offset-4">메인으로 돌아가기</Link></div>
+
+      <Modal isOpen={!!modalContent} onClose={closeModal}>
+        {modalContent && (
+          <>
+            <h2 className="text-2xl font-bold text-emerald-400 mb-6">{modalContent.title}</h2>
+            <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+              {modalContent.content}
+            </div>
+          </>
+        )}
+      </Modal>
     </motion.div>
   );
 }
-
 // ==========================================
 // [내부 컴포넌트 2] Step3: 기본 정보 입력
 // ==========================================
@@ -303,6 +477,7 @@ export default function SignUpPage() {
   const router = useRouter();
   const [view, setView] = useState('form'); 
   const [userData, setUserData] = useState({});
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   const handleSignupComplete = (signupData) => { setUserData(prev => ({ ...prev, ...signupData })); setView('hero'); };
   const handleHeroComplete = (heroData) => { setUserData(prev => ({ ...prev, ...heroData })); setView('step3'); };
@@ -312,11 +487,32 @@ export default function SignUpPage() {
   const handleStep4Prev = () => { setView('step3'); };
   
   // [수정됨] 최종 완료 -> 로컬스토리지 저장 & 결과 페이지 이동
-  const handleStep5Next = () => { 
-    console.log("최종 제출 데이터:", userData); 
-    localStorage.setItem('portfolio_data', JSON.stringify(userData));
-    alert("설정이 완료되었습니다! 결과 페이지로 이동합니다."); 
-    router.push('/result'); 
+  const handleStep5Next = async () => { 
+    try {
+      const response = await fetch(`${apiUrl}/save-portfolio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userData.email,
+          portfolio_data: userData,
+        }),
+      });
+
+      if (response.ok) {
+        // Save the final data to localStorage for the result page to use
+        localStorage.setItem('portfolio_data', JSON.stringify(userData));
+        alert("설정이 완료되었습니다! 결과 페이지로 이동합니다."); 
+        router.push('/result');
+      } else {
+        const errorData = await response.json();
+        alert(`저장 실패: ${errorData.detail || '알 수 없는 오류'}`);
+      }
+    } catch (error) {
+      console.error("Save portfolio error:", error);
+      alert("포트폴리오 저장 중 오류가 발생했습니다.");
+    }
   };
   const handleStep5Prev = () => { setView('step4'); };
 
@@ -325,8 +521,8 @@ export default function SignUpPage() {
       
       {/* 배경 요소 (나무 흔들림, 땅 위치 복구됨) */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.5 }} className="absolute inset-0 z-0 opacity-80"><LayerBack /></motion.div>
-      <motion.div initial={{ x: "-100%", opacity: 0 }} animate={{ x: "0%", opacity: 1, rotate: [0, -1.5, 0, 1.5, 0] }} style={{ transformOrigin: "bottom left" }} transition={{ x: { delay: 0.3, duration: 1.2, ease: "easeOut" }, opacity: { delay: 0.3, duration: 1.2 }, rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" } }} className="absolute top-[-10%] left-[-20%] w-[70%] h-[110%] z-10 pointer-events-none"><TreeLeft /></motion.div>
-      <motion.div initial={{ x: "100%", opacity: 0 }} animate={{ x: "0%", opacity: 1, rotate: [0, 1.5, 0, -1.5, 0] }} style={{ transformOrigin: "bottom right" }} transition={{ x: { delay: 0.4, duration: 1.2, ease: "easeOut" }, opacity: { delay: 0.4, duration: 1.2 }, rotate: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 } }} className="absolute top-[-10%] right-[-20%] w-[70%] h-[110%] z-10 pointer-events-none"><TreeRight /></motion.div>
+      <motion.div initial={{ x: "-100%", opacity: 0 }} animate={{ x: "0%", opacity: 1, rotate: [0, -1.5, 0, 1.5, 0] }} style={{ transformOrigin: "bottom left" }} transition={{ x: { delay: 0.3, duration: 1.2, ease: "easeOut" }, opacity: { delay: 0.3, duration: 1.2 }, rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" } }} className="absolute top-[-5%] left-[-10%] w-[50%] h-[50%] z-10 pointer-events-none"><TreeLeft /></motion.div>
+      <motion.div initial={{ x: "100%", opacity: 0 }} animate={{ x: "0%", opacity: 1, rotate: [0, 1.5, 0, -1.5, 0] }} style={{ transformOrigin: "bottom right" }} transition={{ x: { delay: 0.4, duration: 1.2, ease: "easeOut" }, opacity: { delay: 0.4, duration: 1.2 }, rotate: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 } }} className="absolute top-[-5%] right-[-10%] w-[50%] h-[50%] z-10 pointer-events-none"><TreeRight /></motion.div>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 2.5, ease: "easeInOut" }} className="absolute bottom-[-30%] w-full h-[50%] z-20 pointer-events-none"><GroundFront /></motion.div>
 
       {/* 컨텐츠 영역 */}

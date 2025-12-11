@@ -61,11 +61,7 @@ export default function DeveloperTimelineTemplate({ answers }) {
     <div className="min-h-screen relative p-8 md:p-12 bg-gray-50 dark:bg-gray-900 text-slate-900 dark:text-white transition-colors duration-500">
       <PortfolioBackground moods={selectedMoods} />
 
-      {selectedBgmTitle !== "음악 없음 (Mute)" && (
-        <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 p-3 rounded-full backdrop-blur-md border ${baseBorder} bg-white/10 shadow-lg transition-all hover:bg-white/20`}>
-          <button onClick={togglePlay} className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900 text-white hover:scale-105 transition-transform">{isPlaying ? "⏸" : "▶"}</button>
-        </div>
-      )}
+
 
       <main className="relative z-10 max-w-4xl mx-auto pt-10 pb-20">
         
